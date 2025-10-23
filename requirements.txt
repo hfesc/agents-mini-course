@@ -1,0 +1,7 @@
+openai
+langchain
+langchain_openai
+langgraph
+dotenv
+jupyter
+rich

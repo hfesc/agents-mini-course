@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  ollama:
+    # https://ollama.com/blog/ollama-is-now-available-as-an-official-docker-image
+    image: ollama/ollama:0.5.4
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "127.0.0.1:11434:11434"  # Bind only to localhost for security
+    volumes:
+      - ollama-data:/root/.ollama  # Cross-platform support
+    command: serve
+    healthcheck:
+      test: ["CMD", "ollama", "ps"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  amc:
+    tty: true
+    ipc: host
+    container_name: agents-mini-course
+    image: amc
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - .:/app
+    #command: python demo_ollama.py
+
+volumes:
+  ollama-data:
